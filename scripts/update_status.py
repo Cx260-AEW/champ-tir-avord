@@ -48,7 +48,16 @@ MOIS_NUM = {
     "novembre": 11, "décembre": 12,
 }
 
-STATUS_RE_TEMPLATE = r"{label}\s*[\n ]*\s*(OUVERTE|FERMEE)\s+(OUVERTE|FERMEE)\s+(OUVERTE|FERMEE)"
+STATUS_RE_TEMPLATE = (
+    r"{label}[\s\S]{{0,150}}?(OUVERTE|FERMEE)\s+(OUVERTE|FERMEE)\s+(OUVERTE|FERMEE)"
+)
+# Note : pdfplumber peut parfois intercaler du texte d'une légende voisine
+# (ex. l'encart carte "ROUTE DGATT") entre le libellé d'un itinéraire et ses
+# statuts, à cause de l'ordre de lecture approximatif utilisé pour aplatir
+# une mise en page en texte brut. Le "[\s\S]{0,150}?" tolère jusqu'à 150
+# caractères de texte parasite entre le libellé et le premier statut, sans
+# quoi une correspondance immédiate est de toute façon prioritaire (match
+# non-gourmand).
 
 HEADERS = {
     "User-Agent": (
