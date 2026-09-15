@@ -455,10 +455,13 @@ function initRouteDrawer() {
 
 function initMap() {
   map = L.map('map', { zoomControl: true }).setView([47.02, 2.65], 11);
-  // Fond de carte neutre (relief léger), cohérent avec la palette du site
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; OpenStreetMap &copy; CARTO',
-    maxZoom: 18,
+  // Fond de carte OpenStreetMap standard — pas de clé API requise, contrairement
+  // au fond CARTO utilisé auparavant (CARTO exige désormais une clé depuis fin
+  // août 2026, sans quoi les tuiles sont marquées "API KEY REQUIRED").
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+    subdomains: 'abc',
   }).addTo(map);
 
   const zoneFeature = state.geojson.features.find(f => f.properties.kind === 'zone');
