@@ -30,7 +30,7 @@ requirements.txt
    git add .
    git commit -m "Version initiale"
    git branch -M main
-   git remote add origin https://github.com/<ton-compte>/<nom-du-depot>.git
+   git remote add origin https://github.com/Cx260-AEW/champ-tir-avord.git
    git push -u origin main
    ```
 
