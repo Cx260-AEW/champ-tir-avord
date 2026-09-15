@@ -1,4 +1,5 @@
 import json
+import re
 import xml.etree.ElementTree as ET
 
 NS = {"k": "http://www.opengis.net/kml/2.2"}
@@ -10,6 +11,9 @@ def parse_coords(text):
         lon, lat = float(parts[0]), float(parts[1])
         coords.append([lon, lat])
     return coords
+
+def slugify(name):
+    return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_").upper()
 
 def main():
     tree = ET.parse("/mnt/user-data/uploads/Champ_de_Tir_DGA_TT.kml")
@@ -39,7 +43,15 @@ def main():
             coords_el = line.find(".//k:coordinates", NS)
             coords = parse_coords(coords_el.text)
             geom = {"type": "LineString", "coordinates": coords}
-            props = {"name": name, "route_id": route_id, "kind": "route"}
+            if route_id:
+                # Itinéraire avec un code (@id) : suivi dans le PDF officiel,
+                # coloré selon son statut ouvert/fermé.
+                props = {"name": name, "route_id": route_id, "kind": "route"}
+            else:
+                # Pas de code dans le KML : route d'accès non gérée par le
+                # PDF (ex. "ROUTE ACCES CROSSES"). Toujours affichée en noir,
+                # jamais colorée par un statut.
+                props = {"name": name, "route_id": slugify(name), "kind": "access_route"}
             features.append({"type": "Feature", "geometry": geom, "properties": props})
 
     fc = {"type": "FeatureCollection", "features": features}

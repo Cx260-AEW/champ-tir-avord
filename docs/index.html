@@ -382,6 +382,7 @@
   <div class="legend">
     <span class="dot"><span class="swatch" style="background:var(--open)"></span>Ouvert</span>
     <span class="dot"><span class="swatch" style="background:var(--closed);border-top:2px dashed var(--closed)"></span>Fermé</span>
+    <span class="dot"><span class="swatch" style="background:#000000"></span>Route d'accès (hors PDF)</span>
   </div>
   <a href="https://github.com/Cx260-AEW/champ-tir-avord" target="_blank" rel="noopener">Code source</a>
 </footer>
@@ -478,6 +479,21 @@ function initMap() {
     layer.on('click', () => focusRoute(f.properties.route_id));
     routeLayers[f.properties.route_id] = { layer, feature: f };
     layer.eachLayer(l => bounds.push(l.getBounds()));
+  });
+
+  // Routes d'accès sans code dans le KML (ex. "ROUTE ACCES CROSSES") : ne
+  // figurent pas dans le PDF officiel, donc pas de statut ouvert/fermé.
+  // Toujours affichées en noir, hors de la liste des itinéraires.
+  state.geojson.features.filter(f => f.properties.kind === 'access_route').forEach(f => {
+    const layer = L.geoJSON(f, { style: { color: '#000000', weight: 4, opacity: 0.9 } });
+    layer.addTo(map);
+    layer.eachLayer(l => {
+      l.bindPopup(
+        `<div class="popup-title">${f.properties.name}</div>` +
+        `<div class="popup-code">Route d'accès — non gérée par le document officiel</div>`
+      );
+      bounds.push(l.getBounds());
+    });
   });
 
   if (bounds.length) {
