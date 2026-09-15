@@ -417,7 +417,11 @@ async function init() {
   state.status = await statusRes.json();
   state.slot = guessDefaultSlot();
 
-  document.getElementById('pdf-link').href = state.status.source_pdf;
+  // Paramètre anti-cache : sans lui, les navigateurs (mobile surtout)
+  // servent une copie mise en cache du PDF au lieu de retélécharger la
+  // version actuelle, car l'URL du document est toujours identique.
+  const cacheBuster = encodeURIComponent(state.status.generated_at);
+  document.getElementById('pdf-link').href = state.status.source_pdf + '?v=' + cacheBuster;
 
   initMap();
   renderDayTabs();
