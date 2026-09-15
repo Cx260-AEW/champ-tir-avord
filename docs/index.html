@@ -196,8 +196,7 @@
   .badge.fermee { background: var(--closed-soft); color: var(--closed); }
   .badge.inconnue { background: transparent; color: var(--unknown); border: 1px dashed var(--unknown); }
 
-  .route-drawer-toggle { display: none; }
-  .route-drawer-backdrop { display: none; }
+  .view-toggle-btn { display: none; }
 
   footer {
     background: var(--navy);
@@ -264,6 +263,21 @@
   .force-update-btn:hover:not(:disabled) { filter: brightness(1.2); }
   .force-update-btn:disabled { opacity: 0.55; cursor: default; }
 
+  .view-toggle-btn {
+    border: 1px solid var(--navy);
+    background: transparent;
+    color: var(--navy);
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .view-toggle-btn:hover { background: var(--paper); }
+  .view-toggle-btn.active { background: var(--navy); color: var(--paper); }
+
   .leaflet-popup-content-wrapper { border-radius: var(--radius); font-family: var(--font-head); }
   .popup-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
   .popup-code { font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-soft); margin-bottom: 0.5rem; }
@@ -306,68 +320,23 @@
 
     .status-bar { padding: 0.6rem 1rem; flex-direction: column; }
     .status-card { min-width: 0; width: 100%; }
-    .update-controls { width: 100%; justify-content: space-between; }
+    .update-controls { width: 100%; }
     .force-update-btn { flex: 1; min-height: 44px; }
+    .view-toggle-btn { display: block; flex: 1; min-height: 44px; }
 
     footer { padding: 0.6rem 1rem; flex-direction: column; align-items: flex-start; }
 
-    /* Tiroir latéral pour la liste des itinéraires */
-    aside {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      width: min(82vw, 320px);
-      border-left: none;
-      border-right: 1px solid var(--line);
-      transform: translateX(-100%);
-      transition: transform 0.25s ease;
-      z-index: 1000;
-      box-shadow: 2px 0 16px rgba(0,0,0,0.3);
-    }
-    aside.drawer-open { transform: translateX(0); }
-
-    .route-drawer-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.3rem;
-      position: fixed;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 32px;
-      padding: 0.7rem 0;
-      background: var(--navy);
-      color: var(--paper);
-      border: none;
-      border-radius: 0 8px 8px 0;
-      z-index: 900;
-      font-size: 0.72rem;
-      font-weight: 600;
-      font-family: var(--font-head);
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      writing-mode: vertical-rl;
-    }
-
-    .route-drawer-backdrop {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 18, 15, 0.4);
-      z-index: 950;
-    }
-    .route-drawer-backdrop.visible { display: block; }
+    /* Sur mobile, la carte et la liste des itinéraires occupent le même
+       espace : le bouton "Itinéraires" bascule de l'une à l'autre plutôt
+       que de les empiler. */
+    main { position: relative; }
+    aside { border-left: none; width: 100%; height: 100%; display: none; }
+    main.show-list #map { display: none; }
+    main.show-list aside { display: block; }
   }
 </style>
 </head>
 <body>
-
-<button class="route-drawer-toggle" id="route-drawer-toggle" aria-label="Ouvrir la liste des itinéraires">
-  ▸ Itinéraires
-</button>
-<div class="route-drawer-backdrop" id="route-drawer-backdrop"></div>
 
 <header>
   <div>
@@ -386,6 +355,7 @@
   </div>
   <div class="update-controls">
     <button class="force-update-btn" id="force-update-btn">Forcer une mise à jour</button>
+    <button class="view-toggle-btn" id="route-view-toggle">Itinéraires</button>
   </div>
 </div>
 
@@ -459,24 +429,24 @@ async function init() {
 }
 
 function initRouteDrawer() {
-  const aside = document.querySelector('aside');
-  const toggle = document.getElementById('route-drawer-toggle');
-  const backdrop = document.getElementById('route-drawer-backdrop');
+  const mainEl = document.querySelector('main');
+  const toggle = document.getElementById('route-view-toggle');
 
-  function openDrawer() {
-    aside.classList.add('drawer-open');
-    backdrop.classList.add('visible');
+  function showList() {
+    mainEl.classList.add('show-list');
+    toggle.textContent = 'Carte';
+    toggle.classList.add('active');
   }
-  function closeDrawer() {
-    aside.classList.remove('drawer-open');
-    backdrop.classList.remove('visible');
+  function showMap() {
+    mainEl.classList.remove('show-list');
+    toggle.textContent = 'Itinéraires';
+    toggle.classList.remove('active');
   }
   toggle.addEventListener('click', () => {
-    aside.classList.contains('drawer-open') ? closeDrawer() : openDrawer();
+    mainEl.classList.contains('show-list') ? showMap() : showList();
   });
-  backdrop.addEventListener('click', closeDrawer);
 
-  window.closeRouteDrawer = closeDrawer;
+  window.closeRouteDrawer = showMap;
 }
 
 function initMap() {
