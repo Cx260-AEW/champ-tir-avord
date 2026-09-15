@@ -98,12 +98,6 @@
     margin: 0;
     letter-spacing: 0.01em;
   }
-  header .sub {
-    font-size: 0.8rem;
-    color: #B9C2CC;
-    margin-top: 0.15rem;
-    font-family: var(--font-mono);
-  }
   header a.pdf-link {
     color: var(--paper);
     background: var(--closed);
@@ -202,6 +196,9 @@
   .badge.fermee { background: var(--closed-soft); color: var(--closed); }
   .badge.inconnue { background: transparent; color: var(--unknown); border: 1px dashed var(--unknown); }
 
+  .route-drawer-toggle { display: none; }
+  .route-drawer-backdrop { display: none; }
+
   footer {
     background: var(--navy);
     color: #B9C2CC;
@@ -273,31 +270,108 @@
   .popup-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.15rem 0; gap: 1rem; }
 
   @media (max-width: 820px) {
-    main { grid-template-columns: 1fr; grid-template-rows: 42vh 1fr; }
-    aside { border-left: none; border-top: 1px solid var(--line); }
+    main { grid-template-columns: 1fr; grid-template-rows: 1fr; }
     header { padding: 0.9rem 1rem; }
+
     .controls {
       padding: 0.6rem 1rem;
       position: sticky;
       top: 0;
       z-index: 500;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem;
     }
+    .tab-group { width: 100%; display: flex; flex-wrap: nowrap; gap: 0.3rem; }
+    .tab-group-label { display: none; }
+    .tab {
+      flex: 1 1 0;
+      min-width: 0;
+      min-height: 44px;
+      padding: 0.35rem 0.25rem;
+      text-align: center;
+    }
+    .tab strong {
+      font-size: 0.76rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tab span.small {
+      font-size: 0.58rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .status-bar { padding: 0.6rem 1rem; flex-direction: column; }
     .status-card { min-width: 0; width: 100%; }
     .update-controls { width: 100%; justify-content: space-between; }
     .force-update-btn { flex: 1; min-height: 44px; }
-    .tab-group { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
-    .tab { min-height: 44px; flex: 0 0 auto; }
+
     footer { padding: 0.6rem 1rem; flex-direction: column; align-items: flex-start; }
+
+    /* Tiroir latéral pour la liste des itinéraires */
+    aside {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: min(82vw, 320px);
+      border-left: none;
+      border-right: 1px solid var(--line);
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      z-index: 1000;
+      box-shadow: 2px 0 16px rgba(0,0,0,0.3);
+    }
+    aside.drawer-open { transform: translateX(0); }
+
+    .route-drawer-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      padding: 0.7rem 0;
+      background: var(--navy);
+      color: var(--paper);
+      border: none;
+      border-radius: 0 8px 8px 0;
+      z-index: 900;
+      font-size: 0.72rem;
+      font-weight: 600;
+      font-family: var(--font-head);
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      writing-mode: vertical-rl;
+    }
+
+    .route-drawer-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 18, 15, 0.4);
+      z-index: 950;
+    }
+    .route-drawer-backdrop.visible { display: block; }
   }
 </style>
 </head>
 <body>
 
+<button class="route-drawer-toggle" id="route-drawer-toggle" aria-label="Ouvrir la liste des itinéraires">
+  ▸ Itinéraires
+</button>
+<div class="route-drawer-backdrop" id="route-drawer-backdrop"></div>
+
 <header>
   <div>
     <h1>Champ de tir DGA TT — Bourges / Avord</h1>
-    <div class="sub">État des itinéraires publiés, par tranche horaire</div>
   </div>
   <a class="pdf-link" id="pdf-link" href="#" target="_blank" rel="noopener">Voir le document officiel (PDF)</a>
 </header>
@@ -379,8 +453,30 @@ async function init() {
   renderDayTabs();
   renderSlotTabs();
   renderAll();
+  initRouteDrawer();
 
   document.getElementById('force-update-btn').addEventListener('click', forceUpdate);
+}
+
+function initRouteDrawer() {
+  const aside = document.querySelector('aside');
+  const toggle = document.getElementById('route-drawer-toggle');
+  const backdrop = document.getElementById('route-drawer-backdrop');
+
+  function openDrawer() {
+    aside.classList.add('drawer-open');
+    backdrop.classList.add('visible');
+  }
+  function closeDrawer() {
+    aside.classList.remove('drawer-open');
+    backdrop.classList.remove('visible');
+  }
+  toggle.addEventListener('click', () => {
+    aside.classList.contains('drawer-open') ? closeDrawer() : openDrawer();
+  });
+  backdrop.addEventListener('click', closeDrawer);
+
+  window.closeRouteDrawer = closeDrawer;
 }
 
 function initMap() {
@@ -507,6 +603,7 @@ function focusRoute(routeId) {
     map.fitBounds(layers[0].getBounds(), { padding: [60, 60], maxZoom: 14 });
     layers[0].openPopup();
   }
+  if (window.closeRouteDrawer) window.closeRouteDrawer();
 }
 
 function renderStatusCard() {
