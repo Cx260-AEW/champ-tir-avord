@@ -1,0 +1,75 @@
+name: Mise à jour quotidienne des statuts
+
+on:
+  schedule:
+    # 05h30 UTC = 06h30 (ou 07h30 en été) heure de Paris — avant le début
+    # de la tranche "matin" (8h40 locale).
+    - cron: '30 5 * * *'
+  workflow_dispatch: {}   # permet de déclencher manuellement depuis l'onglet Actions
+  push:
+    branches: [main]      # republie aussi à chaque modification du code
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Installer les dépendances
+        run: pip install -r requirements.txt
+
+      - name: Récupérer et parser le PDF officiel
+        id: scrape
+        run: python scripts/update_status.py
+        continue-on-error: true
+
+      - name: Committer les nouvelles données (si changement)
+        if: steps.scrape.outcome == 'success'
+        run: |
+          git config user.name "champ-tir-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/data/status.json
+          git diff --cached --quiet || git commit -m "Mise à jour automatique des statuts $(date -u +%Y-%m-%d)"
+          git push
+
+      - name: Avertir en cas d'échec du scraping
+        if: steps.scrape.outcome == 'failure'
+        run: |
+          echo "::warning::Le scraping du PDF a échoué — le site continue d'afficher la dernière donnée valide. Vérifier le format du PDF officiel ou l'accès réseau."
+
+  deploy-pages:
+    needs: update-status
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout (branche à jour)
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
