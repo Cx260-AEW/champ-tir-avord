@@ -26,6 +26,8 @@
     --open-soft: #E3EAD9;
     --closed: #A33B2E;
     --closed-soft: #F3DFD9;
+    --warn: #8A6417;
+    --warn-soft: #F4E9D2;
     --unknown: #8A8272;
     --radius: 3px;
     --font-head: 'Public Sans', system-ui, sans-serif;
@@ -45,6 +47,8 @@
       --open-soft: #2A3324;
       --closed: #E08A7A;
       --closed-soft: #3A2620;
+      --warn: #D9B36B;
+      --warn-soft: #3A2F14;
       --unknown: #8A8272;
     }
   }
@@ -60,6 +64,8 @@
     --open-soft: #2A3324;
     --closed: #E08A7A;
     --closed-soft: #3A2620;
+    --warn: #D9B36B;
+    --warn-soft: #3A2F14;
     --unknown: #8A8272;
   }
 
@@ -213,15 +219,53 @@
   .legend .dot { display: inline-flex; align-items: center; gap: 0.35rem; }
   .legend .swatch { width: 14px; height: 3px; display: inline-block; border-radius: 2px; }
 
-  #stale-banner {
-    display: none;
-    background: var(--closed-soft);
-    color: var(--closed);
-    font-size: 0.8rem;
-    padding: 0.5rem 1.5rem;
-    border-bottom: 1px solid var(--closed);
-    font-family: var(--font-mono);
+  #stale-banner { display: none; }
+
+  .status-bar {
+    background: var(--paper-panel);
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    flex-wrap: wrap;
   }
+  .status-card {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    flex: 1;
+    min-width: 260px;
+    transition: background-color 0.2s, border-color 0.2s;
+  }
+  .status-card.fresh { border-color: var(--open); background: var(--open-soft); }
+  .status-card.warn { border-color: var(--warn); background: var(--warn-soft); }
+  .status-card.stale { border-color: var(--closed); background: var(--closed-soft); }
+  .status-icon { font-size: 1.15rem; line-height: 1; flex-shrink: 0; }
+  .status-card.fresh .status-icon { color: var(--open); }
+  .status-card.warn .status-icon { color: var(--warn); }
+  .status-card.stale .status-icon { color: var(--closed); }
+  .status-main { font-size: 0.82rem; font-weight: 700; line-height: 1.3; }
+  .status-sub { font-size: 0.72rem; color: var(--ink-soft); font-family: var(--font-mono); margin-top: 0.1rem; }
+
+  .update-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .force-update-btn {
+    border: 1px solid var(--navy);
+    background: var(--navy);
+    color: var(--paper);
+    padding: 0.55rem 1rem;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .force-update-btn:hover:not(:disabled) { filter: brightness(1.2); }
+  .force-update-btn:disabled { opacity: 0.55; cursor: default; }
 
   .leaflet-popup-content-wrapper { border-radius: var(--radius); font-family: var(--font-head); }
   .popup-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 0.3rem; }
@@ -229,10 +273,21 @@
   .popup-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.15rem 0; gap: 1rem; }
 
   @media (max-width: 820px) {
-    main { grid-template-columns: 1fr; grid-template-rows: 50vh 1fr; }
+    main { grid-template-columns: 1fr; grid-template-rows: 42vh 1fr; }
     aside { border-left: none; border-top: 1px solid var(--line); }
     header { padding: 0.9rem 1rem; }
-    .controls { padding: 0.6rem 1rem; }
+    .controls {
+      padding: 0.6rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 500;
+    }
+    .status-bar { padding: 0.6rem 1rem; flex-direction: column; }
+    .status-card { min-width: 0; width: 100%; }
+    .update-controls { width: 100%; justify-content: space-between; }
+    .force-update-btn { flex: 1; min-height: 44px; }
+    .tab-group { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+    .tab { min-height: 44px; flex: 0 0 auto; }
     footer { padding: 0.6rem 1rem; flex-direction: column; align-items: flex-start; }
   }
 </style>
@@ -247,7 +302,18 @@
   <a class="pdf-link" id="pdf-link" href="#" target="_blank" rel="noopener">Voir le document officiel (PDF)</a>
 </header>
 
-<div id="stale-banner"></div>
+<div class="status-bar">
+  <div class="status-card" id="status-card">
+    <span class="status-icon" id="status-icon">…</span>
+    <div>
+      <div class="status-main" id="status-main">Chargement…</div>
+      <div class="status-sub" id="status-sub"></div>
+    </div>
+  </div>
+  <div class="update-controls">
+    <button class="force-update-btn" id="force-update-btn">Forcer une mise à jour</button>
+  </div>
+</div>
 
 <div class="controls">
   <div class="tab-group">
@@ -273,12 +339,17 @@
     <span class="dot"><span class="swatch" style="background:var(--open)"></span>Ouvert</span>
     <span class="dot"><span class="swatch" style="background:var(--closed);border-top:2px dashed var(--closed)"></span>Fermé</span>
   </div>
-  <div id="last-updated">Chargement…</div>
+  <a href="https://github.com/Cx260-AEW/champ-tir-avord" target="_blank" rel="noopener">Code source</a>
 </footer>
 
 <script>
 const STATUS_LABELS = { matin: "Matin", apres_midi: "Après-midi", nuit: "Nuit" };
 const DAY_FMT = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
+
+// URL du relais public (Cloudflare Worker) qui déclenche le workflow
+// GitHub sans exposer aucun jeton au navigateur. Voir worker/README.md
+// pour le déployer, puis coller son URL ci-dessous.
+const UPDATE_WORKER_URL = 'https://REMPLACE-MOI.workers.dev';
 
 let state = { geojson: null, status: null, dayIndex: 0, slot: 'matin' };
 let map, routeLayers = {}, zoneLayer;
@@ -308,7 +379,8 @@ async function init() {
   renderDayTabs();
   renderSlotTabs();
   renderAll();
-  checkStale();
+
+  document.getElementById('force-update-btn').addEventListener('click', forceUpdate);
 }
 
 function initMap() {
@@ -402,7 +474,7 @@ function renderAll() {
     ));
   });
   renderRouteList();
-  renderLastUpdated();
+  renderStatusCard();
 }
 
 function renderRouteList() {
@@ -437,20 +509,70 @@ function focusRoute(routeId) {
   }
 }
 
-function renderLastUpdated() {
-  const el = document.getElementById('last-updated');
-  const dt = new Date(state.status.generated_at);
-  el.textContent = 'Dernière mise à jour des statuts : ' + dt.toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
-}
-
-function checkStale() {
+function renderStatusCard() {
   const dt = new Date(state.status.generated_at);
   const hours = (Date.now() - dt.getTime()) / 36e5;
-  if (hours > 30) {
-    const banner = document.getElementById('stale-banner');
-    banner.style.display = 'block';
-    banner.textContent = `⚠ Les statuts affichés n'ont pas été actualisés depuis plus de ${Math.floor(hours)} h. Vérifiez le document officiel en cas de doute.`;
+
+  const card = document.getElementById('status-card');
+  const icon = document.getElementById('status-icon');
+  const main = document.getElementById('status-main');
+  const sub = document.getElementById('status-sub');
+
+  main.textContent = 'Dernière mise à jour réussie : ' +
+    dt.toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
+
+  let relLabel;
+  if (hours < 1) relLabel = "il y a moins d'une heure";
+  else if (hours < 24) relLabel = `il y a ${Math.floor(hours)} h`;
+  else relLabel = `il y a ${Math.floor(hours / 24)} j`;
+
+  let level;
+  if (hours <= 24) level = 'fresh';
+  else if (hours <= 30) level = 'warn';
+  else level = 'stale';
+
+  icon.textContent = level === 'fresh' ? '✓' : '⚠';
+  sub.textContent = relLabel + (level !== 'fresh'
+    ? ' — vérifie le document officiel en cas de doute'
+    : '');
+
+  card.classList.remove('fresh', 'warn', 'stale');
+  card.classList.add(level);
+}
+
+async function forceUpdate() {
+  if (UPDATE_WORKER_URL.includes('REMPLACE-MOI')) {
+    alert("Le relais de mise à jour n'est pas encore configuré (voir worker/README.md).");
+    return;
   }
+
+  const btn = document.getElementById('force-update-btn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Déclenchement…';
+
+  try {
+    const resp = await fetch(UPDATE_WORKER_URL, { method: 'POST' });
+    const data = await resp.json().catch(() => ({}));
+
+    if (resp.ok && data.ok) {
+      btn.textContent = 'Déclenché ✓';
+      document.getElementById('status-sub').textContent =
+        'Mise à jour déclenchée — actualise la page dans 1 à 2 minutes.';
+      setTimeout(() => { btn.disabled = false; btn.textContent = originalLabel; }, 60000);
+      return;
+    }
+
+    if (resp.status === 429 && data.retry_after_seconds) {
+      alert(`Une mise à jour vient déjà d'être déclenchée par quelqu'un d'autre — réessaie dans ${data.retry_after_seconds} s.`);
+    } else {
+      alert(`La mise à jour n'a pas pu être déclenchée (${data.error || resp.status}). Réessaie plus tard.`);
+    }
+  } catch (err) {
+    alert('Erreur réseau : ' + err.message);
+  }
+  btn.disabled = false;
+  btn.textContent = originalLabel;
 }
 
 init().catch(err => {

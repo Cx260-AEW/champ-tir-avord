@@ -2,10 +2,10 @@ name: Mise à jour quotidienne des statuts
 
 on:
   schedule:
-    # 05h30 UTC = 06h30 (ou 07h30 en été) heure de Paris — avant le début
-    # de la tranche "matin" (8h40 locale).
-    - cron: '30 5 * * *'
-  workflow_dispatch: {}   # permet de déclencher manuellement depuis l'onglet Actions
+    # 1h UTC = 3h heure de Paris en été (UTC+2). En hiver (UTC+1), ça tombe
+    # à 2h locale — l'écart de 2h avec la tranche "matin" (8h40) reste large.
+    - cron: '0 1 * * *'
+  workflow_dispatch: {}   # bouton "Run workflow" dans l'onglet Actions : déclenchement manuel à la demande
   push:
     branches: [main]      # republie aussi à chaque modification du code
 

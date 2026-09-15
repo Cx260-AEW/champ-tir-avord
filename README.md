@@ -18,6 +18,9 @@ scripts/
   kml_to_geojson.py        (usage ponctuel) reconvertit le KML si tu modifies la carte My Maps
 .github/workflows/
   update.yml                automatise l'exécution quotidienne + republication
+worker/
+  worker.js                 relais public (Cloudflare Worker) pour le bouton "Forcer une mise à jour"
+  README.md                 instructions de déploiement du relais
 requirements.txt
 ```
 
@@ -30,7 +33,7 @@ requirements.txt
    git add .
    git commit -m "Version initiale"
    git branch -M main
-   git remote add origin https://github.com/Cx260-AEW/champ-tir-avord.git
+   git remote add origin https://github.com/<ton-compte>/<nom-du-depot>.git
    git push -u origin main
    ```
 
@@ -49,9 +52,19 @@ requirements.txt
    - Après quelques dizaines de secondes, le site est en ligne à l'adresse
      `https://<ton-compte>.github.io/<nom-du-depot>/`
 
-C'est tout. Ensuite, le workflow tourne automatiquement chaque jour à 5h30 UTC
-(avant le créneau "Matin" à 8h40 heure locale), relit le PDF officiel, met à
-jour `status.json`, et republie le site.
+5. **(Optionnel) Active le bouton "Forcer une mise à jour"** :
+   - Ce bouton, visible par tous les visiteurs du site, permet à n'importe
+     qui de déclencher une actualisation immédiate sans jeton ni compte
+   - Suis les instructions dans `worker/README.md` (déploiement d'un relais
+     gratuit sur Cloudflare, ~5 minutes)
+   - Sans cette étape, le bouton reste visible mais affiche un message
+     indiquant qu'il n'est pas encore configuré — le reste du site
+     fonctionne normalement
+
+C'est tout. Ensuite, le workflow tourne automatiquement chaque jour à 1h UTC
+(3h heure de Paris en été), relit le PDF officiel, met à jour `status.json`,
+et republie le site. Le bouton public (une fois configuré) permet de
+déclencher une actualisation à tout moment entre deux exécutions planifiées.
 
 ## En cas de panne du scraping
 
