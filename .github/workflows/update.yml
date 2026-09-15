@@ -44,8 +44,29 @@ jobs:
           git config user.name "champ-tir-bot"
           git config user.email "actions@users.noreply.github.com"
           git add docs/data/status.json
-          git diff --cached --quiet || git commit -m "Mise à jour automatique des statuts $(date -u +%Y-%m-%d)"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "Aucun changement à committer."
+            exit 0
+          fi
+
+          git commit -m "Mise à jour automatique des statuts $(date -u +%Y-%m-%d)"
+
+          # En cas de push concurrent (ex. une modification manuelle poussée
+          # au même moment), on rebase sur le dernier état distant et on
+          # retente, plutôt que d'échouer immédiatement comme avant.
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Push rejeté (tentative $i/5) — récupération et rebase avant nouvel essai..."
+            git fetch origin main
+            git rebase origin/main
+            sleep $((i * 5))
+          done
+
+          echo "::error::Échec du push après 5 tentatives (collisions répétées avec d'autres pushs)."
+          exit 1
 
       - name: Avertir en cas d'échec du scraping
         if: steps.scrape.outcome == 'failure'
