@@ -50,7 +50,16 @@ jobs:
       - name: Avertir en cas d'échec du scraping
         if: steps.scrape.outcome == 'failure'
         run: |
-          echo "::warning::Le scraping du PDF a échoué — le site continue d'afficher la dernière donnée valide. Vérifier le format du PDF officiel ou l'accès réseau."
+          echo "::warning::Le scraping du PDF a échoué — voir le diagnostic détaillé dans les logs de l'étape 'Récupérer et parser le PDF officiel' ci-dessus. Le site continue d'afficher la dernière donnée valide."
+
+      - name: Publier le texte brut extrait du PDF (pour diagnostic)
+        if: steps.scrape.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-pdf-text
+          path: /tmp/debug_pdf_text.txt
+          if-no-files-found: ignore
+          retention-days: 7
 
   deploy-pages:
     needs: update-status
