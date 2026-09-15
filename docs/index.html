@@ -349,7 +349,7 @@ const DAY_FMT = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numer
 // URL du relais public (Cloudflare Worker) qui déclenche le workflow
 // GitHub sans exposer aucun jeton au navigateur. Voir worker/README.md
 // pour le déployer, puis coller son URL ci-dessous.
-const UPDATE_WORKER_URL = 'https://REMPLACE-MOI.workers.dev';
+const UPDATE_WORKER_URL = 'https://tight-bonus-3b9echamp-tir-update.polocoulbouee26.workers.dev/';
 
 let state = { geojson: null, status: null, dayIndex: 0, slot: 'matin' };
 let map, routeLayers = {}, zoneLayer;
