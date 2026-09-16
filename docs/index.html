@@ -410,9 +410,13 @@ function guessDefaultSlot() {
 }
 
 async function init() {
+  // cache: 'no-store' : sans ça, le navigateur peut continuer à servir une
+  // copie en cache de ces fichiers après une mise à jour, retardant
+  // l'affichage des données fraîches malgré une actualisation réussie
+  // côté serveur.
   const [geoRes, statusRes] = await Promise.all([
-    fetch('data/routes.geojson'),
-    fetch('data/status.json'),
+    fetch('data/routes.geojson', { cache: 'no-store' }),
+    fetch('data/status.json', { cache: 'no-store' }),
   ]);
   state.geojson = await geoRes.json();
   state.status = await statusRes.json();
@@ -630,6 +634,53 @@ function renderStatusCard() {
   card.classList.add(level);
 }
 
+let pollTimer = null;
+let pollAttempts = 0;
+const POLL_INTERVAL_MS = 10000;
+const POLL_MAX_ATTEMPTS = 30; // 30 × 10s = 5 minutes max
+
+function stopPolling() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
+function startPollingForFreshData(previousGeneratedAt) {
+  stopPolling();
+  pollAttempts = 0;
+
+  pollTimer = setInterval(async () => {
+    pollAttempts++;
+
+    if (pollAttempts > POLL_MAX_ATTEMPTS) {
+      stopPolling();
+      const btn = document.getElementById('force-update-btn');
+      btn.disabled = false;
+      btn.textContent = 'Forcer une mise à jour';
+      document.getElementById('status-sub').textContent =
+        "Toujours pas de nouvelle donnée après 5 min — vérifie l'onglet Actions du dépôt.";
+      return;
+    }
+
+    try {
+      const resp = await fetch('data/status.json', { cache: 'no-store' });
+      const data = await resp.json();
+      if (data.generated_at !== previousGeneratedAt) {
+        stopPolling();
+        state.status = data;
+        renderAll();
+        const btn = document.getElementById('force-update-btn');
+        btn.disabled = false;
+        btn.textContent = 'Forcer une mise à jour';
+      }
+    } catch (err) {
+      // Erreur ponctuelle (réseau, etc.) : on retente au prochain passage
+      // sans interrompre le suivi.
+    }
+  }, POLL_INTERVAL_MS);
+}
+
 async function forceUpdate() {
   if (UPDATE_WORKER_URL.includes('REMPLACE-MOI')) {
     alert("Le relais de mise à jour n'est pas encore configuré (voir worker/README.md).");
@@ -646,10 +697,10 @@ async function forceUpdate() {
     const data = await resp.json().catch(() => ({}));
 
     if (resp.ok && data.ok) {
-      btn.textContent = 'Déclenché ✓';
+      btn.textContent = 'Actualisation en cours…';
       document.getElementById('status-sub').textContent =
-        'Mise à jour déclenchée — actualise la page dans 1 à 2 minutes.';
-      setTimeout(() => { btn.disabled = false; btn.textContent = originalLabel; }, 60000);
+        'Mise à jour déclenchée — vérification automatique toutes les 10 s, sans rien à faire.';
+      startPollingForFreshData(state.status.generated_at);
       return;
     }
 
