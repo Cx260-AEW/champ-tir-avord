@@ -13,12 +13,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   update-status:
@@ -31,6 +25,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: 'pip'
 
       - name: Installer les dépendances
         run: pip install -r requirements.txt
@@ -84,24 +79,9 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  deploy-pages:
-    needs: update-status
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Checkout (branche à jour)
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: docs
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+# Remarque : il n'y a plus de job de déploiement ici. GitHub Pages est
+# configuré en mode "Deploy from a branch" (main / docs), donc GitHub
+# publie automatiquement le contenu de docs/ dès que ce job pousse un
+# commit sur main — sans job Actions supplémentaire, ce qui élimine le
+# délai de provisionnement d'une seconde machine (~20-30s gagnées).
+# Voir README.md pour le réglage correspondant dans Settings → Pages.
