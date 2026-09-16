@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="color-scheme" content="light">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Champ de tir DGA TT — État des itinéraires</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
@@ -32,41 +33,6 @@
     --radius: 3px;
     --font-head: 'Public Sans', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-  }
-
-  :root:not([data-theme="light"]) {
-    @media (prefers-color-scheme: dark) {
-      --paper: #1B2019;
-      --paper-panel: #232920;
-      --ink: #EDE9DA;
-      --ink-soft: #B8B29B;
-      --line: #3A3F33;
-      --navy: #EDE9DA;
-      --navy-soft: #C9BF9E;
-      --open: #8FBF74;
-      --open-soft: #2A3324;
-      --closed: #E08A7A;
-      --closed-soft: #3A2620;
-      --warn: #D9B36B;
-      --warn-soft: #3A2F14;
-      --unknown: #8A8272;
-    }
-  }
-  :root[data-theme="dark"] {
-    --paper: #1B2019;
-    --paper-panel: #232920;
-    --ink: #EDE9DA;
-    --ink-soft: #B8B29B;
-    --line: #3A3F33;
-    --navy: #EDE9DA;
-    --navy-soft: #C9BF9E;
-    --open: #8FBF74;
-    --open-soft: #2A3324;
-    --closed: #E08A7A;
-    --closed-soft: #3A2620;
-    --warn: #D9B36B;
-    --warn-soft: #3A2F14;
-    --unknown: #8A8272;
   }
 
   * { box-sizing: border-box; }
@@ -152,7 +118,7 @@
     border-color: var(--navy);
     color: var(--paper);
   }
-  .tab.active span.small { color: #B9C2CC; }
+  .tab.active span.small { color: var(--paper); }
 
   main {
     flex: 1;
@@ -207,7 +173,7 @@
 
   footer {
     background: var(--navy);
-    color: #B9C2CC;
+    color: var(--paper);
     font-size: 0.75rem;
     padding: 0.6rem 1.5rem;
     display: flex;
@@ -390,7 +356,7 @@
   <div class="legend">
     <span class="dot"><span class="swatch" style="background:var(--open)"></span>Ouvert</span>
     <span class="dot"><span class="swatch" style="background:var(--closed);border-top:2px dashed var(--closed)"></span>Fermé</span>
-    <span class="dot"><span class="swatch" style="background:#000000"></span>Route d'accès (hors PDF)</span>
+    <span class="dot"><span class="swatch" style="background:#000000"></span>Route d'accès</span>
   </div>
   <a href="https://github.com/Cx260-AEW/champ-tir-avord" target="_blank" rel="noopener">Code source</a>
 </footer>
