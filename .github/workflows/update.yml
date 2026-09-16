@@ -2,9 +2,11 @@ name: Mise à jour quotidienne des statuts
 
 on:
   schedule:
-    # 1h UTC = 3h heure de Paris en été (UTC+2). En hiver (UTC+1), ça tombe
-    # à 2h locale — l'écart de 2h avec la tranche "matin" (8h40) reste large.
-    - cron: '0 1 * * *'
+    # Minute non-ronde (17) plutôt que pile 3h00 : les horaires "ronds"
+    # sont les plus demandés sur GitHub Actions et subissent le plus de
+    # retard en cas de file d'attente. Pas de garantie totale, mais réduit
+    # nettement le risque de délai important.
+    - cron: '17 3 * * *'
   workflow_dispatch: {}   # bouton "Run workflow" dans l'onglet Actions : déclenchement manuel à la demande
   push:
     branches: [main]      # republie aussi à chaque modification du code
