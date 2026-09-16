@@ -298,7 +298,14 @@
     .force-update-btn { flex: 1; min-height: 44px; }
     .view-toggle-btn { display: block; flex: 1; min-height: 44px; }
 
-    footer { padding: 0.6rem 1rem; flex-direction: column; align-items: flex-start; }
+    footer {
+      padding: 0.6rem 1rem;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.4rem;
+    }
+    .legend { align-self: flex-start; }
+    footer a { align-self: flex-end; }
 
     /* Sur mobile, la carte et la liste des itinéraires occupent le même
        espace : le bouton "Itinéraires" bascule de l'une à l'autre plutôt
