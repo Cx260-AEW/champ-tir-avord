@@ -1,12 +1,13 @@
 name: Mise à jour quotidienne des statuts
 
 on:
-  schedule:
-    # Minute non-ronde (17) plutôt que pile 3h00 : les horaires "ronds"
-    # sont les plus demandés sur GitHub Actions et subissent le plus de
-    # retard en cas de file d'attente. Pas de garantie totale, mais réduit
-    # nettement le risque de délai important.
-    - cron: '17 3 * * *'
+  # Le déclenchement quotidien à heure fixe se fait désormais via un Cron
+  # Trigger sur le Worker Cloudflare (voir worker/README.md, étape 8) —
+  # plus fiable que le cron natif de GitHub Actions, qui n'est garanti
+  # qu'en "best effort" et peut prendre plusieurs heures de retard sur un
+  # dépôt public peu chargé. Ce workflow reste déclenchable à tout moment
+  # via workflow_dispatch, que ce soit par ce Cron Trigger ou par le
+  # bouton "Forcer une mise à jour" du site.
   workflow_dispatch: {}   # bouton "Run workflow" dans l'onglet Actions : déclenchement manuel à la demande
   push:
     branches: [main]      # republie aussi à chaque modification du code
