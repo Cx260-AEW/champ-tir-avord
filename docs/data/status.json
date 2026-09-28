@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-28T07:56:19+00:00",
+  "generated_at": "2026-09-28T15:00:57+00:00",
   "source_pdf": "https://www.inforoute18.fr/mod_turbolead/getvue.php/2758_view.pdf",
   "time_slots": {
     "matin": "8h40 - 12h00",
@@ -7,42 +7,6 @@
     "nuit": "20h00 - 01h00"
   },
   "days": [
-    {
-      "date": "2026-09-28",
-      "label": "lundi 28 septembre 2026",
-      "tranches": {
-        "matin": {
-          "CV01": "FERMEE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "FERMEE",
-          "D66": "OUVERTE",
-          "D71": "FERMEE",
-          "D36": "OUVERTE",
-          "D10": "FERMEE",
-          "D102": "FERMEE"
-        },
-        "apres_midi": {
-          "CV01": "FERMEE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "FERMEE",
-          "D66": "OUVERTE",
-          "D71": "FERMEE",
-          "D36": "OUVERTE",
-          "D10": "FERMEE",
-          "D102": "FERMEE"
-        },
-        "nuit": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "OUVERTE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "OUVERTE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        }
-      }
-    },
     {
       "date": "2026-09-29",
       "label": "mardi 29 septembre 2026",
@@ -106,6 +70,42 @@
         "nuit": {
           "CV01": "OUVERTE",
           "ROUTE DGATT": "OUVERTE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        }
+      }
+    },
+    {
+      "date": "2026-10-01",
+      "label": "jeudi 01 octobre 2026",
+      "tranches": {
+        "matin": {
+          "CV01": "FERMEE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "FERMEE",
+          "D36": "FERMEE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "apres_midi": {
+          "CV01": "FERMEE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "FERMEE",
+          "D36": "FERMEE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "nuit": {
+          "CV01": "FERMEE",
+          "ROUTE DGATT": "FERMEE",
           "D46": "OUVERTE",
           "D66": "OUVERTE",
           "D71": "OUVERTE",
