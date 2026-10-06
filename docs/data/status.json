@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05T15:01:29+00:00",
+  "generated_at": "2026-10-06T15:00:39+00:00",
   "source_pdf": "https://www.inforoute18.fr/mod_turbolead/getvue.php/2758_view.pdf",
   "time_slots": {
     "matin": "8h40 - 12h00",
@@ -7,78 +7,6 @@
     "nuit": "20h00 - 01h00"
   },
   "days": [
-    {
-      "date": "2026-10-05",
-      "label": "lundi 05 octobre 2026",
-      "tranches": {
-        "matin": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "FERMEE",
-          "D66": "OUVERTE",
-          "D71": "FERMEE",
-          "D36": "FERMEE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        },
-        "apres_midi": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "FERMEE",
-          "D66": "OUVERTE",
-          "D71": "FERMEE",
-          "D36": "FERMEE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        },
-        "nuit": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "OUVERTE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "OUVERTE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        }
-      }
-    },
-    {
-      "date": "2026-10-06",
-      "label": "mardi 06 octobre 2026",
-      "tranches": {
-        "matin": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "FERMEE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "OUVERTE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        },
-        "apres_midi": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "FERMEE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "OUVERTE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        },
-        "nuit": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "OUVERTE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "OUVERTE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        }
-      }
-    },
     {
       "date": "2026-10-07",
       "label": "mercredi 07 octobre 2026",
@@ -100,6 +28,78 @@
           "D66": "OUVERTE",
           "D71": "OUVERTE",
           "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "nuit": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "OUVERTE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        }
+      }
+    },
+    {
+      "date": "2026-10-08",
+      "label": "jeudi 08 octobre 2026",
+      "tranches": {
+        "matin": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "apres_midi": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "nuit": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "OUVERTE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        }
+      }
+    },
+    {
+      "date": "2026-10-09",
+      "label": "vendredi 09 octobre 2026",
+      "tranches": {
+        "matin": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "FERMEE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "apres_midi": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "FERMEE",
           "D10": "OUVERTE",
           "D102": "OUVERTE"
         },
