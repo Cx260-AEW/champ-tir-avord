@@ -410,7 +410,10 @@ async function init() {
   // servent une copie mise en cache du PDF au lieu de retélécharger la
   // version actuelle, car l'URL du document est toujours identique.
   const cacheBuster = encodeURIComponent(state.status.generated_at);
-  document.getElementById('pdf-link').href = state.status.source_pdf + '?v=' + cacheBuster;
+  // L'URL source contient déjà un '?' (id_vue + token) : on ajoute le
+  // paramètre anti-cache avec '&' pour ne pas corrompre le token.
+  const sep = state.status.source_pdf.includes('?') ? '&' : '?';
+  document.getElementById('pdf-link').href = state.status.source_pdf + sep + 'v=' + cacheBuster;
 
   initMap();
   renderDayTabs();
