@@ -22,7 +22,7 @@ from pathlib import Path
 import requests
 import pdfplumber
 
-PDF_URL = "https://www.inforoute18.fr/mod_turbolead/getvue.php/2758_view.pdf"
+PDF_URL = "https://www.inforoute18.fr/mod_turbolead/getvue.php?id_vue=2758&token=153d78dc88ae045d29d1a823c41159d5"
 OUTPUT_PATH = Path(__file__).resolve().parent.parent / "docs" / "data" / "status.json"
 DEBUG_TEXT_PATH = Path("/tmp/debug_pdf_text.txt")
 
