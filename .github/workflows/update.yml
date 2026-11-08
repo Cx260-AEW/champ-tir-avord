@@ -41,6 +41,12 @@ jobs:
         id: scrape
         run: python scripts/update_status.py
         continue-on-error: true
+        env:
+          # Facultatif : variable de dépôt PDF_URL (Settings → Secrets and
+          # variables → Actions → Variables). Si elle est renseignée, cette
+          # adresse est essayée en premier — pratique si le lien du PDF
+          # change sur inforoute18.fr, sans avoir à modifier le code.
+          PDF_URL: ${{ vars.PDF_URL }}
 
       - name: Committer les nouvelles données (si changement)
         if: steps.scrape.outcome == 'success'
