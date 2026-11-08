@@ -37,6 +37,15 @@ jobs:
       - name: Installer les dépendances
         run: pip install -r requirements.txt
 
+      # Le lien du PDF change régulièrement : le script le retrouve en lisant
+      # la page d'accueil avec Chromium (installé à la demande par le script).
+      # On met en cache le navigateur pour éviter de le retélécharger.
+      - name: Cache du navigateur Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+
       - name: Récupérer et parser le PDF officiel
         id: scrape
         run: python scripts/update_status.py
@@ -83,12 +92,16 @@ jobs:
         run: |
           echo "::warning::Le scraping du PDF a échoué — voir le diagnostic détaillé dans les logs de l'étape 'Récupérer et parser le PDF officiel' ci-dessus. Le site continue d'afficher la dernière donnée valide."
 
-      - name: Publier le texte brut extrait du PDF (pour diagnostic)
+      - name: Publier les éléments de diagnostic (texte du PDF, capture de la page)
         if: steps.scrape.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: debug-pdf-text
-          path: /tmp/debug_pdf_text.txt
+          name: debug-scraping
+          path: |
+            /tmp/debug_pdf_text.txt
+            /tmp/debug_page.png
+            /tmp/debug_homepage.html
+            /tmp/debug_network.txt
           if-no-files-found: ignore
           retention-days: 7
 
