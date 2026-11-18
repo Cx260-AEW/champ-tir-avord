@@ -1,48 +1,12 @@
 {
-  "generated_at": "2026-11-17T15:01:43+00:00",
-  "source_pdf": "https://www.inforoute18.fr/mod_turbolead/getvue.php?id_vue=2758&token=3950fe983d58d4ce6417d7e9612cb762",
+  "generated_at": "2026-11-18T15:01:54+00:00",
+  "source_pdf": "https://www.inforoute18.fr/mod_turbolead/getvue.php?id_vue=2758&token=764d6f0980551e38c6c6a06764e4bed0",
   "time_slots": {
     "matin": "8h40 - 12h00",
     "apres_midi": "13h40 - 18h00",
     "nuit": "20h00 - 01h00"
   },
   "days": [
-    {
-      "date": "2026-11-17",
-      "label": "mardi 17 novembre 2026",
-      "tranches": {
-        "matin": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "FERMEE",
-          "D10": "FERMEE",
-          "D102": "OUVERTE"
-        },
-        "apres_midi": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "FERMEE",
-          "D10": "FERMEE",
-          "D102": "OUVERTE"
-        },
-        "nuit": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "OUVERTE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "OUVERTE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        }
-      }
-    },
     {
       "date": "2026-11-18",
       "label": "mercredi 18 novembre 2026",
@@ -106,6 +70,42 @@
         "nuit": {
           "CV01": "FERMEE",
           "ROUTE DGATT": "FERMEE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        }
+      }
+    },
+    {
+      "date": "2026-11-20",
+      "label": "vendredi 20 novembre 2026",
+      "tranches": {
+        "matin": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "FERMEE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "apres_midi": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "FERMEE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "nuit": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "OUVERTE",
           "D46": "OUVERTE",
           "D66": "OUVERTE",
           "D71": "OUVERTE",
