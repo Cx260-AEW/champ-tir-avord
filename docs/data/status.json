@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-11-19T15:01:08+00:00",
-  "source_pdf": "https://www.inforoute18.fr/mod_turbolead/getvue.php?id_vue=2758&token=7e4b1d9812c89b13ee610246b7c870bd",
+  "generated_at": "2026-11-20T15:31:21+00:00",
+  "source_pdf": "https://www.inforoute18.fr/mod_turbolead/getvue.php?id_vue=2758&token=db8c6b9cea4cead231870d1db477894e",
   "time_slots": {
     "matin": "8h40 - 12h00",
     "apres_midi": "13h40 - 18h00",
@@ -8,62 +8,26 @@
   },
   "days": [
     {
-      "date": "2026-11-19",
-      "label": "jeudi 19 novembre 2026",
+      "date": "2026-11-23",
+      "label": "lundi 23 novembre 2026",
       "tranches": {
         "matin": {
           "CV01": "OUVERTE",
           "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "FERMEE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        },
-        "apres_midi": {
-          "CV01": "FERMEE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "FERMEE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
-        },
-        "nuit": {
-          "CV01": "FERMEE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
+          "D46": "FERMEE",
           "D66": "OUVERTE",
           "D71": "OUVERTE",
           "D36": "OUVERTE",
           "D10": "OUVERTE",
           "D102": "OUVERTE"
-        }
-      }
-    },
-    {
-      "date": "2026-11-20",
-      "label": "vendredi 20 novembre 2026",
-      "tranches": {
-        "matin": {
-          "CV01": "OUVERTE",
-          "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
-          "D66": "OUVERTE",
-          "D71": "OUVERTE",
-          "D36": "FERMEE",
-          "D10": "OUVERTE",
-          "D102": "OUVERTE"
         },
         "apres_midi": {
           "CV01": "OUVERTE",
           "ROUTE DGATT": "FERMEE",
-          "D46": "OUVERTE",
+          "D46": "FERMEE",
           "D66": "OUVERTE",
           "D71": "OUVERTE",
-          "D36": "FERMEE",
+          "D36": "OUVERTE",
           "D10": "OUVERTE",
           "D102": "OUVERTE"
         },
@@ -80,8 +44,44 @@
       }
     },
     {
-      "date": "2026-11-23",
-      "label": "lundi 23 novembre 2026",
+      "date": "2026-11-24",
+      "label": "mardi 24 novembre 2026",
+      "tranches": {
+        "matin": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "apres_midi": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "FERMEE",
+          "D46": "FERMEE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        },
+        "nuit": {
+          "CV01": "OUVERTE",
+          "ROUTE DGATT": "OUVERTE",
+          "D46": "OUVERTE",
+          "D66": "OUVERTE",
+          "D71": "OUVERTE",
+          "D36": "OUVERTE",
+          "D10": "OUVERTE",
+          "D102": "OUVERTE"
+        }
+      }
+    },
+    {
+      "date": "2026-11-25",
+      "label": "mercredi 25 novembre 2026",
       "tranches": {
         "matin": {
           "CV01": "OUVERTE",
