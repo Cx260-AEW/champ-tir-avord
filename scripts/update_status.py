@@ -34,6 +34,10 @@ ID_VUE = "2758"
 PLAIN_URL = f"https://www.inforoute18.fr/mod_turbolead/getvue.php?id_vue={ID_VUE}"
 LEGACY_URL = "https://www.inforoute18.fr/mod_turbolead/getvue.php/2758_view.pdf"
 OUTPUT_PATH = Path(__file__).resolve().parent.parent / "docs" / "data" / "status.json"
+# Copie du PDF officiel hébergée avec le site : le lien d'origine contient un token
+# qui expire, donc le bouton du site pointe vers cette copie, qui ne peut pas expirer.
+PDF_COPY_PATH = OUTPUT_PATH.parent / "planning.pdf"
+PDF_COPY_URL = "data/planning.pdf"
 DEBUG_TEXT_PATH = Path("/tmp/debug_pdf_text.txt")
 
 ROUTE_LABELS = [
@@ -424,12 +428,12 @@ def load_status():
             print(f"[échec] {label} → {exc}", file=sys.stderr)
             return None
         print(f"[succès] {len(days)} jour(s) lus via : {label}", file=sys.stderr)
-        return days
+        return days, pdf_bytes
 
     for label, url in candidate_urls():
-        days = attempt(label, url)
-        if days:
-            return days, url
+        result = attempt(label, url)
+        if result:
+            return result[0], url, result[1]
 
     try:
         url, pdf_bytes = discover_with_browser()
@@ -437,9 +441,9 @@ def load_status():
         attempts.append(("découverte par navigateur", "(aucun lien trouvé)", exc))
         print(f"[échec] découverte par navigateur → {exc}", file=sys.stderr)
     else:
-        days = attempt("lien frais trouvé par le navigateur", url, pdf_bytes)
-        if days:
-            return days, url
+        result = attempt("lien frais trouvé par le navigateur", url, pdf_bytes)
+        if result:
+            return result[0], url, result[1]
 
     lines = []
     for label, url, exc in attempts:
@@ -549,7 +553,7 @@ def parse_status_text(text: str) -> list:
 
 def main():
     try:
-        days, source_url = load_status()
+        days, source_url, pdf_bytes = load_status()
     except ScrapeError as exc:
         log_block("DIAGNOSTIC — échec de la mise à jour", [
             f"Étape en échec : {exc.context.get('step', 'inconnue')}",
@@ -579,6 +583,7 @@ def main():
     output = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "source_pdf": source_url,
+        "local_pdf": PDF_COPY_URL,
         "time_slots": {
             "matin": "8h40 - 12h00",
             "apres_midi": "13h40 - 18h00",
@@ -588,10 +593,11 @@ def main():
     }
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    PDF_COPY_PATH.write_bytes(pdf_bytes)
     OUTPUT_PATH.write_text(
         json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8"
     )
-    print(f"OK — {len(days)} jour(s) écrits dans {OUTPUT_PATH}")
+    print(f"OK — {len(days)} jour(s) écrits dans {OUTPUT_PATH} ; copie du PDF : {PDF_COPY_PATH} ({len(pdf_bytes)} octets)")
 
 
 if __name__ == "__main__":
