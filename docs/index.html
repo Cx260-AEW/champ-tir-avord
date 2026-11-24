@@ -406,14 +406,19 @@ async function init() {
   state.status = await statusRes.json();
   state.slot = guessDefaultSlot();
 
-  // Paramètre anti-cache : sans lui, les navigateurs (mobile surtout)
-  // servent une copie mise en cache du PDF au lieu de retélécharger la
-  // version actuelle, car l'URL du document est toujours identique.
+  // Le bouton pointe vers la copie du PDF hébergée avec le site (mise à jour
+  // à chaque actualisation). L'adresse d'origine contient un token qui expire :
+  // l'utiliser directement donnait un lien mort une fois sur deux.
+  // Le paramètre ?v= évite qu'un navigateur serve une ancienne copie en cache.
   const cacheBuster = encodeURIComponent(state.status.generated_at);
-  // L'URL source contient déjà un '?' (id_vue + token) : on ajoute le
-  // paramètre anti-cache avec '&' pour ne pas corrompre le token.
-  const sep = state.status.source_pdf.includes('?') ? '&' : '?';
-  document.getElementById('pdf-link').href = state.status.source_pdf + sep + 'v=' + cacheBuster;
+  const pdfLink = document.getElementById('pdf-link');
+  if (state.status.local_pdf) {
+    pdfLink.href = state.status.local_pdf + '?v=' + cacheBuster;
+  } else {
+    // Ancien status.json sans copie locale : on retombe sur l'adresse d'origine.
+    const sep = state.status.source_pdf.includes('?') ? '&' : '?';
+    pdfLink.href = state.status.source_pdf + sep + 'v=' + cacheBuster;
+  }
 
   initMap();
   renderDayTabs();
