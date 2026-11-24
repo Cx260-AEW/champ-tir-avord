@@ -62,7 +62,7 @@ jobs:
         run: |
           git config user.name "champ-tir-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add docs/data/status.json
+          git add docs/data/status.json docs/data/planning.pdf
 
           if git diff --cached --quiet; then
             echo "Aucun changement à committer."
