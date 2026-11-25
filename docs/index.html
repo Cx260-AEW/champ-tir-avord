@@ -420,19 +420,8 @@ async function init() {
   state.status = await statusRes.json();
   state.slot = guessDefaultSlot();
 
-  // Le bouton pointe vers la copie du PDF hébergée avec le site (mise à jour
-  // à chaque actualisation). L'adresse d'origine contient un token qui expire :
-  // l'utiliser directement donnait un lien mort une fois sur deux.
-  // Le paramètre ?v= évite qu'un navigateur serve une ancienne copie en cache.
-  const cacheBuster = encodeURIComponent(state.status.generated_at);
-  const pdfLink = document.getElementById('pdf-link');
-  if (state.status.local_pdf) {
-    pdfLink.href = state.status.local_pdf + '?v=' + cacheBuster;
-  } else {
-    // Ancien status.json sans copie locale : on retombe sur l'adresse d'origine.
-    const sep = state.status.source_pdf.includes('?') ? '&' : '?';
-    pdfLink.href = state.status.source_pdf + sep + 'v=' + cacheBuster;
-  }
+  // Le bouton ouvre exactement le lien d'où les données ont été lues.
+  document.getElementById('pdf-link').href = state.status.source_pdf;
 
   initMap();
   renderDayTabs();
