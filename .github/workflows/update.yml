@@ -1,5 +1,8 @@
 name: Mise à jour quotidienne des statuts
 
+# Titre affiché dans la liste des runs de l'onglet Actions.
+run-name: ${{ github.event_name == 'push' && 'CODE UPDATE' || inputs.source == 'auto' && 'AUTOMATIC UPDATE' || 'MANUAL UPDATE' }}
+
 on:
   # Le déclenchement quotidien à heure fixe se fait désormais via un Cron
   # Trigger sur le Worker Cloudflare (voir worker/README.md, étape 8) —
@@ -8,7 +11,13 @@ on:
   # dépôt public peu chargé. Ce workflow reste déclenchable à tout moment
   # via workflow_dispatch, que ce soit par ce Cron Trigger ou par le
   # bouton "Forcer une mise à jour" du site.
-  workflow_dispatch: {}   # bouton "Run workflow" dans l'onglet Actions : déclenchement manuel à la demande
+  workflow_dispatch:      # bouton "Run workflow" dans l'onglet Actions, bouton du site, planification de nuit
+    inputs:
+      source:
+        description: "Origine du déclenchement (manual = bouton, auto = planification)"
+        required: false
+        default: manual
+        type: string
   push:
     branches: [main]      # republie aussi à chaque modification du code
 
