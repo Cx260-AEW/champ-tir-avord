@@ -124,8 +124,37 @@ jobs:
           path: docs
           name: github-pages-${{ github.run_attempt }}
 
+      # GitHub met parfois quelques secondes à lister le paquet qu'on vient
+      # d'envoyer : on laisse un délai, puis on retente le déploiement du
+      # MÊME paquet (inutile de le renvoyer).
+      - name: Attente de l'indexation du paquet
+        run: sleep 20
+
       - name: Deploy to GitHub Pages
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Attente avant 2e tentative
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 45
+
+      - name: Deploy to GitHub Pages (2e tentative)
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Attente avant 3e tentative
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure'
+        run: sleep 90
+
+      - name: Deploy to GitHub Pages (3e tentative)
+        if: steps.deployment.outcome == 'failure' && steps.deployment_retry.outcome == 'failure'
         uses: actions/deploy-pages@v4
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
