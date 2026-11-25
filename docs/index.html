@@ -318,6 +318,14 @@
     main.show-list #map { display: none; }
     main.show-list aside { display: block; }
   }
+  .update-progress { margin: 0.5rem 1rem 0; padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--warn); background: var(--warn-soft); font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink); }
+  .update-progress.success { border-color: var(--open); background: var(--open-soft); }
+  .update-progress.error { border-color: var(--closed); background: var(--closed-soft); }
+  .update-progress-bar { height: 5px; border-radius: 3px; background: rgba(0,0,0,0.1); margin-top: 0.45rem; overflow: hidden; }
+  .update-progress-fill { height: 100%; width: 0; background: var(--warn); transition: width 0.4s ease; }
+  .update-progress.success .update-progress-fill { background: var(--open); }
+  .update-progress.error .update-progress-fill { background: var(--closed); }
+  .update-reload-btn { margin-top: 0.5rem; padding: 0.4rem 0.9rem; border-radius: 6px; border: 1px solid var(--open); background: var(--open); color: #fff; font-family: inherit; font-size: 0.8rem; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -341,6 +349,12 @@
     <button class="force-update-btn" id="force-update-btn">Forcer une mise à jour</button>
     <button class="view-toggle-btn" id="route-view-toggle">Itinéraires</button>
   </div>
+</div>
+
+<div class="update-progress" id="update-progress" hidden>
+  <div class="update-progress-text" id="update-progress-text"></div>
+  <div class="update-progress-bar"><div class="update-progress-fill" id="update-progress-fill"></div></div>
+  <button class="update-reload-btn" id="update-reload-btn" hidden>Recharger la page</button>
 </div>
 
 <div class="controls">
@@ -633,15 +647,134 @@ let pollAttempts = 0;
 const POLL_INTERVAL_MS = 10000;
 const POLL_MAX_ATTEMPTS = 30; // 30 × 10s = 5 minutes max
 
+// Suivi réel du workflow via l'API publique de GitHub (dépôt public, sans jeton).
+const GH_API = 'https://api.github.com/repos/Cx260-AEW/champ-tir-avord/actions';
+const STEP_POLL_MS = 6000;
+const STEP_MAX_MS = 8 * 60 * 1000;
+
+// Étapes affichées à l'utilisateur, associées aux étapes du workflow par leur nom.
+const UPDATE_STAGES = [
+  { label: "Préparation", job: 'update-status', match: /^(Checkout|Set up Python|Installer|Cache du navigateur)/ },
+  { label: "Lecture du PDF officiel", job: 'update-status', match: /^Récupérer et parser/,
+    error: "Impossible de lire le PDF officiel (site inforoute18 inaccessible ou format modifié)." },
+  { label: "Enregistrement des données", job: 'update-status', match: /^Committer/,
+    error: "Les nouvelles données n'ont pas pu être enregistrées." },
+  { label: "Préparation du site", job: 'deploy-pages', match: /^(Checkout|Setup Pages|Upload artifact)/,
+    error: "La préparation du site a échoué." },
+  { label: "Publication du site", job: 'deploy-pages', match: /^Deploy to GitHub Pages/,
+    error: "GitHub Pages a refusé la publication (panne passagère possible), réessaie dans quelques minutes." },
+];
+
+let stepTimer = null;
+
 function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (stepTimer) { clearTimeout(stepTimer); stepTimer = null; }
+}
+
+function resetUpdateButton() {
+  const btn = document.getElementById('force-update-btn');
+  btn.disabled = false;
+  btn.textContent = 'Forcer une mise à jour';
+}
+
+function showProgress(kind, text, fraction, withReload) {
+  const box = document.getElementById('update-progress');
+  box.hidden = false;
+  box.className = 'update-progress' + (kind === 'running' ? '' : ' ' + kind);
+  document.getElementById('update-progress-text').textContent = text;
+  document.getElementById('update-progress-fill').style.width = Math.round(fraction * 100) + '%';
+  document.getElementById('update-reload-btn').hidden = !withReload;
+}
+
+// Calcule l'état d'avancement à partir de la liste des jobs d'un run.
+function analyseRun(jobs) {
+  const total = UPDATE_STAGES.length;
+  const jobByName = {};
+  jobs.forEach(j => { jobByName[j.name] = j; });
+  const isOk = st => st.status === 'completed' && (st.conclusion === 'success' || st.conclusion === 'skipped');
+
+  let current = 0;
+  for (let i = 0; i < total; i++) {
+    const stg = UPDATE_STAGES[i];
+    const job = jobByName[stg.job];
+    const steps = job ? (job.steps || []).filter(st => stg.match.test(st.name)) : [];
+    const failedStep = steps.find(st => st.conclusion === 'failure');
+    // Les tentatives de déploiement sont répétées : seule l'issue du job compte.
+    const jobFailed = job && job.status === 'completed' && job.conclusion === 'failure';
+    if (failedStep && (stg.job === 'update-status' || jobFailed)) {
+      return { state: 'error', stage: i, message: stg.error || 'Une étape a échoué.' };
+    }
+    if (jobFailed && !steps.length) {
+      return { state: 'error', stage: i, message: stg.error || 'Une étape a échoué.' };
+    }
+    const done = steps.length > 0 && steps.every(isOk) &&
+      (stg.job !== 'deploy-pages' || i < total - 1 || (job.status === 'completed' && job.conclusion === 'success'));
+    if (done) current = i + 1; else break;
   }
+  if (current >= total) return { state: 'success' };
+  return { state: 'running', stage: current };
+}
+
+async function ghJson(path) {
+  const resp = await fetch(GH_API + path, { headers: { Accept: 'application/vnd.github+json' }, cache: 'no-store' });
+  if (!resp.ok) throw new Error('GitHub API ' + resp.status);
+  return resp.json();
+}
+
+async function latestDispatchRunId() {
+  const data = await ghJson('/workflows/update.yml/runs?event=workflow_dispatch&per_page=1');
+  return data.workflow_runs && data.workflow_runs[0] ? data.workflow_runs[0].id : 0;
+}
+
+function followRun(baselineRunId, previousGeneratedAt) {
+  const startedAt = Date.now();
+  let runId = null;
+  const total = UPDATE_STAGES.length;
+  showProgress('running', 'Mise à jour en cours : démarrage…', 0.02, false);
+
+  const tick = async () => {
+    if (Date.now() - startedAt > STEP_MAX_MS) {
+      showProgress('error', "Erreur : la mise à jour prend trop de temps. Réessaie dans quelques minutes.", 1, false);
+      resetUpdateButton();
+      return;
+    }
+    try {
+      if (!runId) {
+        const data = await ghJson('/workflows/update.yml/runs?event=workflow_dispatch&per_page=3');
+        const run = (data.workflow_runs || []).find(r => r.id > baselineRunId);
+        if (run) runId = run.id;
+      }
+      if (runId) {
+        const data = await ghJson('/runs/' + runId + '/jobs?per_page=10');
+        const res = analyseRun(data.jobs || []);
+        if (res.state === 'error') {
+          showProgress('error', 'Erreur à l’étape ' + (res.stage + 1) + ' / ' + total + ' : ' + res.message, (res.stage + 1) / total, false);
+          resetUpdateButton();
+          return;
+        }
+        if (res.state === 'success') {
+          showProgress('success', 'Mise à jour réussie, réactualise le site.', 1, true);
+          resetUpdateButton();
+          return;
+        }
+        showProgress('running', 'Mise à jour en cours : étape ' + (res.stage + 1) + ' / ' + total +
+          ' — ' + UPDATE_STAGES[res.stage].label, (res.stage + 0.5) / total, false);
+      }
+    } catch (err) {
+      // API GitHub indisponible ou limite atteinte : on bascule sur la
+      // vérification du fichier de données, sans étapes détaillées.
+      showProgress('running', 'Mise à jour en cours…', 0.3, false);
+      startPollingForFreshData(previousGeneratedAt);
+      return;
+    }
+    stepTimer = setTimeout(tick, STEP_POLL_MS);
+  };
+  stepTimer = setTimeout(tick, 3000);
 }
 
 function startPollingForFreshData(previousGeneratedAt) {
-  stopPolling();
+  if (pollTimer) clearInterval(pollTimer);
   pollAttempts = 0;
 
   pollTimer = setInterval(async () => {
@@ -649,11 +782,8 @@ function startPollingForFreshData(previousGeneratedAt) {
 
     if (pollAttempts > POLL_MAX_ATTEMPTS) {
       stopPolling();
-      const btn = document.getElementById('force-update-btn');
-      btn.disabled = false;
-      btn.textContent = 'Forcer une mise à jour';
-      document.getElementById('status-sub').textContent =
-        "Toujours pas de nouvelle donnée après 5 min — vérifie l'onglet Actions du dépôt.";
+      resetUpdateButton();
+      showProgress('error', "Erreur : toujours pas de nouvelle donnée après 5 min. Réessaie plus tard.", 1, false);
       return;
     }
 
@@ -664,13 +794,11 @@ function startPollingForFreshData(previousGeneratedAt) {
         stopPolling();
         state.status = data;
         renderAll();
-        const btn = document.getElementById('force-update-btn');
-        btn.disabled = false;
-        btn.textContent = 'Forcer une mise à jour';
+        resetUpdateButton();
+        showProgress('success', 'Mise à jour réussie, réactualise le site.', 1, true);
       }
     } catch (err) {
-      // Erreur ponctuelle (réseau, etc.) : on retente au prochain passage
-      // sans interrompre le suivi.
+      // Erreur ponctuelle : on retente au prochain passage.
     }
   }, POLL_INTERVAL_MS);
 }
@@ -685,6 +813,10 @@ async function forceUpdate() {
   const originalLabel = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Déclenchement…';
+  stopPolling();
+
+  let baseline = 0;
+  try { baseline = await latestDispatchRunId(); } catch (e) { baseline = -1; }
 
   try {
     const resp = await fetch(UPDATE_WORKER_URL, { method: 'POST' });
@@ -692,23 +824,28 @@ async function forceUpdate() {
 
     if (resp.ok && data.ok) {
       btn.textContent = 'Actualisation en cours…';
-      document.getElementById('status-sub').textContent =
-        'Mise à jour déclenchée — vérification automatique toutes les 10 s, sans rien à faire.';
-      startPollingForFreshData(state.status.generated_at);
+      if (baseline >= 0) {
+        followRun(baseline, state.status.generated_at);
+      } else {
+        showProgress('running', 'Mise à jour en cours…', 0.3, false);
+        startPollingForFreshData(state.status.generated_at);
+      }
       return;
     }
 
     if (resp.status === 429 && data.retry_after_seconds) {
-      alert(`Une mise à jour vient déjà d'être déclenchée par quelqu'un d'autre — réessaie dans ${data.retry_after_seconds} s.`);
+      showProgress('error', `Erreur : une mise à jour vient d'être déclenchée par quelqu'un d'autre, réessaie dans ${data.retry_after_seconds} s.`, 1, false);
     } else {
-      alert(`La mise à jour n'a pas pu être déclenchée (${data.error || resp.status}). Réessaie plus tard.`);
+      showProgress('error', `Erreur : la mise à jour n'a pas pu être déclenchée (${data.error || resp.status}).`, 1, false);
     }
   } catch (err) {
-    alert('Erreur réseau : ' + err.message);
+    showProgress('error', 'Erreur réseau : ' + err.message, 1, false);
   }
   btn.disabled = false;
   btn.textContent = originalLabel;
 }
+
+document.getElementById('update-reload-btn').addEventListener('click', () => location.reload());
 
 init().catch(err => {
   document.getElementById('map').innerHTML =
